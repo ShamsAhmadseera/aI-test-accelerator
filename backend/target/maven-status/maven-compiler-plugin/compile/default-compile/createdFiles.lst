@@ -3,6 +3,8 @@ com/qa/commandcenter/QaCommandCenterApplication.class
 com/qa/commandcenter/repository/TestRunRepository.class
 com/qa/commandcenter/security/JwtUtil.class
 com/qa/commandcenter/dto/LoginRequest.class
+com/qa/commandcenter/model/SimpleUser.class
+com/qa/commandcenter/controller/TestController.class
 com/qa/commandcenter/dto/ApiTestRequest.class
 com/qa/commandcenter/model/User.class
 com/qa/commandcenter/service/UserService.class

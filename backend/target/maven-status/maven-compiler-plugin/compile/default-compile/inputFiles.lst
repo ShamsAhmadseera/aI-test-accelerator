@@ -1,6 +1,7 @@
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/repository/TestRunRepository.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/controller/TestRunController.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/security/JwtAuthFilter.java
+/Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/model/SimpleUser.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/service/UserService.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/service/AiGeneratorService.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/config/SecurityConfig.java
@@ -10,6 +11,7 @@
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/config/AppConfig.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/repository/UserRepository.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/controller/AuthController.java
+/Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/controller/TestController.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/dto/ApiTestRequest.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/service/TestRunService.java
 /Users/shams.alafeef/Code/qa-compass/aI-test-accelerator/backend/src/main/java/com/qa/commandcenter/QaCommandCenterApplication.java

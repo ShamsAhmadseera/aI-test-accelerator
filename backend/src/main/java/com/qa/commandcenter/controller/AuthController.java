@@ -22,15 +22,21 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-    );
-    String token = jwtUtil.generateToken(request.getUsername());
-    return ResponseEntity.ok(Map.of(
-        "token", token,
-        "username", request.getUsername(),
-        "message", "Login successful"
-    ));
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+      );
+      String token = jwtUtil.generateToken(request.getUsername());
+      return ResponseEntity.ok(Map.of(
+          "token", token,
+          "username", request.getUsername(),
+          "message", "Login successful"
+      ));
+    } catch (Exception e) {
+      // Log the exact error
+      System.err.println("Login failed for user: " + request.getUsername() + " | Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+      return ResponseEntity.status(401).body(Map.of("message", "Authentication failed: " + e.getMessage()));
+    }
   }
 
   @PostMapping("/register")

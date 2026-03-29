@@ -2,7 +2,6 @@ package com.qa.commandcenter.service;
 
 import com.qa.commandcenter.dto.ApiTestRequest;
 import com.qa.commandcenter.model.TestRun;
-import com.qa.commandcenter.repository.TestRunRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -10,20 +9,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TestRunService {
 
-  private final TestRunRepository testRunRepository;
   private final AiGeneratorService aiGeneratorService;
   private final RestTemplate restTemplate;
 
+  // In-memory storage for testing
+  private final Map<String, TestRun> testRuns = new ConcurrentHashMap<>();
+  private final List<TestRun> recentRuns = Collections.synchronizedList(new ArrayList<>());
+
   public TestRun createAndRun(ApiTestRequest request, String username) {
     TestRun testRun = new TestRun();
+    testRun.setId(UUID.randomUUID().toString());
     testRun.setEndpoint(request.getEndpoint());
     testRun.setMethod(request.getMethod());
     testRun.setAuthType(request.getAuthType());
@@ -31,7 +34,6 @@ public class TestRunService {
     testRun.setPayload(request.getPayload());
     testRun.setStatus("RUNNING");
     testRun.setCreatedBy(username);
-    testRun = testRunRepository.save(testRun);
 
     try {
       // Execute actual API call
@@ -50,7 +52,14 @@ public class TestRunService {
       testRun.setStatus("FAILED");
     }
 
-    return testRunRepository.save(testRun);
+    // Store in memory
+    testRuns.put(testRun.getId(), testRun);
+    recentRuns.add(0, testRun);
+    if (recentRuns.size() > 10) {
+      recentRuns.remove(recentRuns.size() - 1);
+    }
+
+    return testRun;
   }
 
   private TestRun.TestResult executeApiCall(ApiTestRequest request) {
@@ -103,18 +112,25 @@ public class TestRunService {
   }
 
   public List<TestRun> getRecentRuns() {
-    return testRunRepository.findTop10ByOrderByCreatedAtDesc();
+    return new ArrayList<>(recentRuns);
   }
 
   public List<TestRun> getRunsByUser(String username) {
-    return testRunRepository.findByCreatedByOrderByCreatedAtDesc(username);
+    return testRuns.values().stream()
+        .filter(run -> username.equals(run.getCreatedBy()))
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .toList();
   }
 
   public Map<String, Object> getDashboardStats() {
-    long total = testRunRepository.count();
-    long passed = testRunRepository.countByResultPassed(true);
+    long total = testRuns.size();
+    long passed = testRuns.values().stream()
+        .mapToLong(run -> run.getResult() != null && run.getResult().isPassed() ? 1 : 0)
+        .sum();
     long failed = total - passed;
-    long running = testRunRepository.countByStatus("RUNNING");
+    long running = testRuns.values().stream()
+        .mapToLong(run -> "RUNNING".equals(run.getStatus()) ? 1 : 0)
+        .sum();
 
     return Map.of(
         "total", total,
@@ -126,6 +142,10 @@ public class TestRunService {
   }
 
   public TestRun getById(String id) {
-    return testRunRepository.findById(id).orElseThrow(() -> new RuntimeException("TestRun not found"));
+    TestRun testRun = testRuns.get(id);
+    if (testRun == null) {
+      throw new RuntimeException("TestRun not found");
+    }
+    return testRun;
   }
 }

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Test Accelerator - Network Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #00ff88; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #003300; border: 1px solid #00ff88; }
+        .error { background: #330000; border: 1px solid #ff4444; }
+        .pending { background: #333300; border: 1px solid #ffaa00; }
+        button { background: #00ff88; color: black; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #00cc66; }
+        #result { margin-top: 20px; padding: 15px; background: #222; border-radius: 5px; }
+        pre { background: #111; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 AI Test Accelerator - Network Diagnostic</h1>
+
+    <div class="status pending" id="backend-status">
+        🔄 Testing Backend Connection...
+    </div>
+
+    <div class="status pending" id="auth-status">
+        🔄 Testing Authentication...
+    </div>
+
+    <div class="status pending" id="test-status">
+        🔄 Testing API Execution...
+    </div>
+
+    <div>
+        <button onclick="testConnection()">🔄 Retest Connection</button>
+        <button onclick="testLogin()">🔑 Test Login</button>
+        <button onclick="testAPI()">🧪 Test API</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8091/api';
+
+        function updateStatus(id, success, message) {
+            const el = document.getElementById(id);
+            el.className = `status ${success ? 'success' : 'error'}`;
+            el.innerHTML = `${success ? '✅' : '❌'} ${message}`;
+        }
+
+        function logResult(message, data = null) {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            result.innerHTML += `<div><strong>[${timestamp}]</strong> ${message}</div>`;
+            if (data) {
+                result.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+        }
+
+        async function testConnection() {
+            logResult('🔧 Testing Backend Connection...');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: 'admin', password: 'admin'})
+                });
+
+                if (response.ok) {
+                    updateStatus('backend-status', true, 'Backend Connected (Port 8091)');
+                    logResult('✅ Backend connection successful');
+                } else {
+                    updateStatus('backend-status', false, `Backend Error (${response.status})`);
+                    logResult(`❌ Backend returned: ${response.status}`);
+                }
+            } catch (error) {
+                updateStatus('backend-status', false, 'Backend Unreachable - Network Error');
+                logResult(`❌ Network Error: ${error.message}`);
+                logResult('🔧 Possible causes:', {
+                    'Backend not running': 'Start with: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8091"',
+                    'CORS issue': 'Check SecurityConfig CORS settings',
+                    'Port conflict': 'Check if port 8091 is available'
+                });
+            }
+        }
+
+        async function testLogin() {
+            logResult('🔑 Testing Authentication...');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: 'admin', password: 'admin'})
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    updateStatus('auth-status', true, 'Authentication Working');
+                    logResult('✅ Login successful', data);
+                } else {
+                    updateStatus('auth-status', false, 'Authentication Failed');
+                    logResult('❌ Login failed', data);
+                }
+            } catch (error) {
+                updateStatus('auth-status', false, 'Auth Network Error');
+                logResult(`❌ Auth Error: ${error.message}`);
+            }
+        }
+
+        async function testAPI() {
+            logResult('🧪 Testing API Execution...');
+
+            try {
+                const response = await fetch(`${API_BASE}/tests/run`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        endpoint: 'https://httpbin.org/get',
+                        method: 'GET',
+                        expectedStatusCode: 200
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    updateStatus('test-status', true, 'API Execution Working');
+                    logResult('✅ Test execution successful', data);
+                } else {
+                    updateStatus('test-status', false, `API Error (${response.status})`);
+                    logResult(`❌ Test execution failed`, data);
+                }
+            } catch (error) {
+                updateStatus('test-status', false, 'API Network Error');
+                logResult(`❌ API Error: ${error.message}`);
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = () => {
+            setTimeout(testConnection, 1000);
+            setTimeout(testLogin, 2000);
+            setTimeout(testAPI, 3000);
+        };
+    </script>
+
+    <h2>📋 Expected Working Configuration:</h2>
+    <ul>
+        <li><strong>Backend:</strong> http://localhost:8091/api ✅</li>
+        <li><strong>Frontend:</strong> http://localhost:3000 ✅</li>
+        <li><strong>Login:</strong> admin / admin 🔑</li>
+        <li><strong>Test Users:</strong> admin/admin, demo/demo, testuser/testpass</li>
+    </ul>
+
+    <h2>🚀 Quick Fix Commands:</h2>
+    <pre>
+# Start Backend:
+cd backend && mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8091"
+
+# Start Frontend:
+cd frontend && npm start
+
+# Test Backend API:
+curl -X POST http://localhost:8091/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin"}'
+    </pre>
+</body>
+</html>
